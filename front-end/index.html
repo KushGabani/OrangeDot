@@ -16,15 +16,14 @@
     </nav>
 
     <div class = "container align-items-center">
-        <input type="text" name = "searchQuery" id = "searchQuery" placeholder="Your search query here... " style="width: 15rem;">
-        <button type = "submit" name = "submit" value="SEARCH" onclick="handleSearchQuery()">SEARCH</button>
+        <input type="text" name = "searchQuery" id = "searchQuery" placeholder="Your search query here... " style="width: 15rem;">&nbsp;&nbsp;&nbsp;&nbsp;
+        <button type = "submit" name = "submit" value="SEARCH" onclick="handleSearchQuery()">SEARCH</button>&nbsp;&nbsp;&nbsp;&nbsp;
+        <button onclick="stopTweetStreams()">Stop</button>
     </div>
 
     <div class="container">
         <div id="tweetStream"></div>
     </div>
-
-
 
     <script src="https://cdnjs.cloudflare.com/ajax/libs/socket.io/3.0.4/socket.io.js" integrity="sha512-aMGMvNYu8Ue4G+fHa359jcPb1u+ytAF+P2SCb+PxrjCdO3n3ZTxJ30zuH39rimUggmTwmh2u7wvQsDTHESnmfQ==" crossorigin="anonymous"></script>
     <script src="./script.js"></script>

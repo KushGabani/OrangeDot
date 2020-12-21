@@ -17,14 +17,11 @@ const socketio = socketIO(server)
 
 app.use(bodyParser.json());
 app.use(bodyParser.urlencoded({ extended: false }));
+app.use(express.static(__dirname + '/../front-end/'));
 
 app.get('/', (req, res) => {
     res.sendFile(path.resolve(__dirname, '../', 'front-end', 'index.html'))
 })
-
-rules = [  
-          { value: 'Govt' },
-]
 
 async function getStreamRules() {
     const response = await needle('get', rulesURL, {
@@ -33,11 +30,10 @@ async function getStreamRules() {
         }
     })
 
-    console.log(response.body)
     return response.body
 }
 
-async function setStreamRules() {
+async function setStreamRules(rules) {
     data = {
         add: rules
     }
@@ -93,35 +89,37 @@ function streamTweets(socket) {
     return stream
 }
 
-app.post('/searchTweets', (req, res) => {
-    console.log(req.body);
-})
-
-socketio.on('connection', async () => {
+socketio.on('connection', async (socket) => {
     console.log('Client connected...')
 
     let currentRules;
-
-    try {
-        currentRules = await getStreamRules()
-        await deleteStreamRules(currentRules)
-        await setStreamRules()
-    } catch(err) {
-        console.error(err);
-        process.exit(1)
-    }
-
-    const filteredStream = streamTweets(socketio)
-
-    let timeout = 0;
-    filteredStream.on('timeout', () => {
-        console.warn('A connection error occured. Reconnecting...')
-        setTimeout(() => {
-            timeout++
-            streamTweets(io)
-        }, 2 ** timeout)
-        streamTweets(io)
-    })
+    socket.on('getRules', async rules => {
+        console.log("In server.js socket.on('getRules') function.")
+        try {
+            currentRules = await getStreamRules()
+            await deleteStreamRules(currentRules)
+            await setStreamRules(rules);
+            console.log("Hello")
+        } catch (err){
+            console.error(err);
+            process.exit(1);
+        }
+    
+        const filteredStream = streamTweets(socket);
+        let timeout = 0;
+        filteredStream.on('timeout', () => {
+            console.warn('A connection error occured. Reconnecting...')
+            setTimeout(() => {
+                timeout++
+                streamTweets(socket)
+            }, 2 ** timeout);
+            streamTweets(socket);
+        });
+    });
+    
+    socket.on('reconnect', () => {
+        console.log("Client Reconnected");
+    });
 });
 
 server.listen(PORT, () => console.log(`Listening on port ${PORT}...`))
